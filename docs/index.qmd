@@ -1,0 +1,176 @@
+---
+title: "Tareas de Johan"
+format: html
+editor: visual
+---
+::: panel-tabset
+
+vamole a tomar cafe
+
+## tarea uno
+
+```{r}
+
+library(tidyverse)
+
+
+
+pinguinos <- read.csv("penguins_size.csv")
+
+pinguinos2 <- pinguinos %>% 
+  filter(sex=="FEMALE") %>% 
+  select(sex, island,body_mass_g, species) %>% 
+  group_by(sex, island, species) %>% 
+  summarise(mean_body_mass = max(body_mass_g, na.rm= TRUE)) 
+
+pinguinos2
+
+
+```
+
+## tarea dos
+
+```{r}
+catra <- read.csv("catrate.csv")
+
+
+catra2 <- catra %>% 
+  mutate(year = as.factor(years)) %>% 
+  select(year, pond, success) %>% 
+  ggplot(aes(x = year, y = pond)) +
+  geom_bar(stat = "identity", fill = "darkblue")
+
+catra2
+
+```
+
+## tarea tres
+
+
+```{r}
+##Cargar bases de datos
+
+visita1 <- read.csv2("Replic1_birds.csv")
+visita2 <- read.csv2("Replic2_birds.csv")
+visita3 <- read.csv2("Replic3_birds.csv")
+
+##Revisar estructura de bases de datos
+
+str(visita1)
+str(visita2)
+str(visita3)
+
+
+visita1clean <- visita1 %>% 
+  rename("sitio" = "Site",
+         "habitatsitio" = "Sitio..",
+         "fecha" = "Fecha..m.d.a.",
+         "abundancia" = "Num..0.50",
+         "hora" = "Hora.0.00.24.00.") %>% 
+  select(sitio, habitatsitio,hora, fecha, Especies, abundancia, Viento, Cielo, Rio, Sequence)
+
+
+
+visita2clean <- visita2 %>% 
+  rename("sitio" = "Sitio..",
+         "habitatsitio" = "Sitio...1",
+         "fecha" = "Fecha..m.d.a.",
+         "abundancia" = "Num..0.50",
+         "hora" = "Hora.0.00.24.00.") %>% 
+  select(sitio, habitatsitio,hora, fecha, Especies, abundancia, Viento, Cielo, Rio, Sequence)
+
+
+
+
+visita3clean <- visita3 %>% 
+  rename("sitio" = "Sitio..",
+         "habitatsitio" = "Sitio...1",
+         "fecha" = "Fecha..m.d.a.",
+         "abundancia" = "Num..0.50",
+         "hora" = "Hora.0.00.24.00.") %>% 
+  select(sitio, habitatsitio,hora, fecha, Especies, abundancia, Viento, Cielo, Rio, Sequence)
+
+##Unir las bases de datos
+
+?cbind()
+?rbind()
+
+
+avescompleta <- rbind(visita1clean,
+                      visita2clean, 
+                      visita3clean)
+
+
+
+avesancha <- avescompleta %>% 
+  group_by(sitio, habitatsitio, fecha, 
+           hora, Cielo, Viento, Rio, Especies) %>% 
+  summarise(abundancia = max(abundancia)) %>% 
+  pivot_wider(names_from = Especies,
+              values_from = abundancia, 
+              values_fill = 0)
+
+
+##Cargar base de datos de vegetación  
+
+arboles <- read.csv2("TreesQ.csv")
+habitat <- read.csv2("VegData.csv")
+cobertura <- read.csv2("HistQ.csv")
+
+
+areabasal <- arboles %>% 
+  group_by(VEGID, Species) %>% 
+  summarise(area_basal = 2*(A* 0.1 + B* 0.3 + C* 0.8 + D*1.8 
+                            + E*3.1 + F *4.9 + G*7.1 + H*0.05 )) %>% 
+  group_by(VEGID) %>% 
+  summarise(area_basal = sum(area_basal))
+  
+
+coberturasum <- cobertura %>% 
+  group_by(VEGID) %>% 
+  summarise(Group_cover = sum(A, na.rm = TRUE)+sum(B, na.rm = TRUE)+
+              sum(C, na.rm = TRUE),Subcanopy = sum(D, na.rm = TRUE) + 
+              sum(E, na.rm = TRUE))
+
+
+habitatfull <- habitat %>% 
+  left_join(areabasal, by = "VEGID") %>% 
+  left_join(coberturasum, by = "VEGID")
+
+
+
+aveshabitat <- habitatfull %>% 
+  mutate(sitio = factor(Site)) %>% 
+  full_join(avesancha, by = "sitio")
+
+
+
+##Graficar el modelo
+
+ggplot(data = aveshabitat, aes(area_basal, y = CYAMEL)) +
+  geom_point(aes(color = Type)) +
+  stat_smooth(method = glm, 
+              method.args = list(family= "poisson"), 
+              aes(fill = Type)) + 
+  theme_classic()
+
+
+View(aveshabitat)
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+:::
