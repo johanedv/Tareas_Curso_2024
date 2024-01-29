@@ -3,8 +3,8 @@ title: "Tareas de Johan"
 format: html
 editor: visual
 ---
-::: panel-tabset
 
+::: panel-tabset
 vamole a tomar cafe
 
 ## tarea uno
@@ -45,7 +45,6 @@ catra2
 ```
 
 ## tarea tres
-
 
 ```{r}
 ##Cargar bases de datos
@@ -161,16 +160,4 @@ View(aveshabitat)
 
 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
 :::
